@@ -10,7 +10,8 @@ void signalHander(int i)
     receivedSignal = 1;
 };
 
-struct Options {
+struct Options 
+{
     size_t timeout {0};
     std::string addr {"ipc:///tmp/test"};
 };
