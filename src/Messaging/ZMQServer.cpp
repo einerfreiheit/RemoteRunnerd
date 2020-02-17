@@ -10,7 +10,7 @@ Message ZMQServer::receive()
     std::vector<zmq::message_t> received;
     zmq::recv_multipart(socket, std::back_inserter(received), zmq::recv_flags::dontwait);
     Message result;
-    if (received.empty()) return result;
+    if (received.size() != 2) return result;
     result.identifier = received[0].to_string();
     result.content = received[1].to_string();
     return result;

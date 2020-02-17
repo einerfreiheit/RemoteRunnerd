@@ -3,7 +3,7 @@
 #include <sstream>
 #include <fstream>
 
-InstructionProcessor::InstructionProcessor(const std::string& config) : config(config)
+InstructionProcessor::InstructionProcessor(const std::string& configFilePath) : configFilePath(configFilePath)
 {
 }
 
@@ -17,11 +17,12 @@ std::vector<std::string> InstructionProcessor::split(const std::string& cmd) con
 
 void InstructionProcessor::readPermissions()
 {
-    std::ifstream input(config);
+    std::ifstream input(configFilePath);
     std::string token;
     if (!input.is_open()) {
-        throw std::runtime_error(std::string("cannot open file: " + config));
+        throw std::runtime_error(std::string("cannot open config file: " + configFilePath));
     }
+    permitted.clear();
     while (input >> token)
         permitted.emplace(token);
     input.close();

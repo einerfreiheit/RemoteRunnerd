@@ -2,6 +2,7 @@
 #include "Messaging/ZMQServer.h"
 #include "TaskRunner.h"
 #include <csignal>
+#include <iostream>
 #include <unistd.h>
 
 static int receivedSignal = 0;
@@ -13,7 +14,7 @@ void signalHander(int i)
 struct Options 
 {
     size_t timeout {0};
-    std::string addr {"ipc:///tmp/test"};
+    std::string addr {"tcp://127.0.0.1:12345"};
 };
 
 Options readOptions(int argc, char** argv)
@@ -26,9 +27,14 @@ Options readOptions(int argc, char** argv)
             result.addr = std::string(optarg);
             break;
         case 't':
+        {
             std::stringstream ss(optarg);
             ss >> result.timeout;
             break;
+        }
+        default:
+            std::cerr<<"usage: [-t timeout] [-a protocol://end-point]\n";
+            exit(1);
         }
     }
     return result;

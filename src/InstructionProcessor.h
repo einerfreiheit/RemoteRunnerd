@@ -8,14 +8,14 @@
 class InstructionProcessor
 {
 public:
-    explicit InstructionProcessor(const std::string& config);
+    explicit InstructionProcessor(const std::string& configFilePath);
     ~InstructionProcessor() = default;
     void readPermissions();
     std::vector<std::string> split(const std::string& cmd) const;
     bool isCorrect(std::vector<std::string>& splitted) const;
 private:
     std::unordered_set<std::string> permitted;
-    std::string config;
+    std::string configFilePath;
 };
 
 #endif // INSTRUCTIONPROCESSOR_H

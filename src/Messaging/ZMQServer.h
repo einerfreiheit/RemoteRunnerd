@@ -12,8 +12,8 @@ class ZMQServer
 public:
     explicit ZMQServer(const std::string& addr);
     ~ZMQServer() = default;
-    Message receive() ;
-    void send(const Message& reply) ;
+    Message receive();
+    void send(const Message& reply);
     void connect();
 private:
     zmq::context_t context;

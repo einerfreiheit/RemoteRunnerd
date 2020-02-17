@@ -37,6 +37,7 @@ TaskPtr TaskRunner::getResult(pid_t pid)
 
 void TaskRunner::runTask(const std::vector<std::string>& cmd, const std::string& id)
 {
+    if (cmd.empty()) return;
     TaskPtr task = std::make_shared<Task>();
     task->id = id;
     if (pipe(task->fd) < 0) {
@@ -58,7 +59,7 @@ void TaskRunner::runTask(const std::vector<std::string>& cmd, const std::string&
         params.push_back(nullptr);
         dup2(task->fd[1], fileno(stdout));
         dup2(task->fd[1], fileno(stderr));
-        execvp(cmd[0].c_str(), &params[0]);
+        execvp(params[0], &params[0]);
         exit(0);
     } else {
         close(task->fd[1]);

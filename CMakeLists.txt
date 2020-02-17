@@ -8,7 +8,7 @@ set(SOURCE
     "src/TaskRunner.cpp"
 )
 include_directories("src/" "src/Messaging/")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -g3")
+set (CMAKE_C_FLAGS "-O3 -g3")
 add_executable(RemoteRunnerd ${SOURCE}) 
 target_link_libraries(RemoteRunnerd cppzmq)
 target_compile_features(RemoteRunnerd PRIVATE cxx_std_17)
