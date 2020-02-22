@@ -8,9 +8,9 @@ ZMQServer::ZMQServer(const std::string& addr): addr(addr)
 Message ZMQServer::receive()
 {
     std::vector<zmq::message_t> received;
-    zmq::recv_multipart(socket, std::back_inserter(received), zmq::recv_flags::dontwait);
+    auto readed = zmq::recv_multipart(socket, std::back_inserter(received), zmq::recv_flags::dontwait);
+    if (!readed.has_value() || *readed != 2) return Message();
     Message result;
-    if (received.size() != 2) return result;
     result.identifier = received[0].to_string();
     result.content = received[1].to_string();
     return result;
