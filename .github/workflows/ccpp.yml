@@ -1,0 +1,39 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      shell: bash
+      run: |
+         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+         git submodule sync --recursive
+         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+    - name: install libzmq
+      run: |
+         curl -L https://github.com/zeromq/libzmq/archive/v4.3.1.tar.gz > zeromq.tar.gz 
+         tar -xvzf zeromq.tar.gz
+         mkdir libzmq-build
+         cmake -Hlibzmq-4.3.1 -Blibzmq-build -DZMQ_BUILD_TESTS=OFF -DWITH_PERF_TOOL=OFF -DCMAKE_BUILD_TYPE=Release -DENABLE_DRAFTS=OFF
+         cd libzmq-build
+         make -j`nproc`
+         sudo make install
+    - name: install cppzmq
+      shell: bash
+      run: |
+        cd third_party/cppzmq
+        mkdir cppzmq-build 
+        cmake -H. -Bcppzmq-build -DENABLE_DRAFTS=OFF
+        cd cppzmq-build
+        make -j`nproc`
+        sudo make install
+    - name: build
+      shell: bash
+      run: |
+        mkdir build && cd build
+        cmake ..
+        make -j`nproc`
