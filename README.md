@@ -38,6 +38,7 @@ Simple remote task runner. Read list of permitted commands and accept incoming r
         C: Via Dockerfile:
       
            1. Build image: docker build --rm . -t runnerd_image:latest
-           2. Run container: docker run --name runnerd_test --rm -ti -v /tmp/:/tmp/ --network="host"  runnerd_image:latest /bin/bash
-           3. Change remote-runnerd.conf: cp remote-runnerd.conf runnerd_test:/etc/remote-runnerd.conf
+           2. Run container: docker run --name runnerd_test --rm -ti -v /tmp/:/tmp/ --network="host"  runnerd_image:latest /bin/bash  
+           3. In container start RemoteRunner: RemoteRunnerd/build/RemoteRunner
+           4. Change remote-runnerd.conf: cp remote-runnerd.conf runnerd_test:/etc/remote-runnerd.conf
 
