@@ -37,3 +37,7 @@ jobs:
         mkdir build && cd build
         cmake ..
         make -j`nproc`
+    - uses: actions/upload-artifact@master
+      with:
+        name: RemoteRunnerd
+        path: build/RemoteRunnerd
