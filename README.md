@@ -21,9 +21,10 @@ Simple remote task runner. Read list of permitted commands and accept incoming r
 
  - Build:
           
-          1. Download and unzip the libzmq build via Cmake. Set -DENABLE_DRAFTS=OFF option to disable DRAFT socket API when build libzmq and cppzmq.
+          1. Download and unzip the libzmq build via Cmake. 
+          Set -DENABLE_DRAFTS=OFF option to disable DRAFT socket API when build libzmq and cppzmq.
           2. Install cppzmq:
-                  - cd third_party/cppzmq
-                  - mkdir build && cd build && cmake .. && sudo make -j4 install
+                  2.1 cd third_party/cppzmq
+                  2.2 mkdir build && cd build && cmake .. && sudo make -j4 install
                   
           3. Build RemoteRunnerd via Cmake
