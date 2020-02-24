@@ -21,14 +21,17 @@ Simple remote task runner. Recieve commands and run task if permitted.
  - Build:
 
        A: Manually
-            1. Download and unzip the libzmq then build via Cmake. 
-            Set -DENABLE_DRAFTS=OFF option to disable DRAFT socket API when build libzmq and cppzmq.
+            1. Download and unzip the libzmq then build via Cmake
+            Set -DENABLE_DRAFTS=OFF option to disable DRAFT socket API when build libzmq and cppzmq
             2. Build and install cppzmq from source (third_party/cppzmq)
-            3. Build RemoteRunnerd  
+            3. Build RemoteRunnerd
         B: Use script (run from RemoteRunderd):
            1.  Run ./build_ci.sh
-        C: Via Dockerfile:
-           1. Build image: docker build --rm . -t runnerd_image:test
-           2. Run container: docker run --name runnerd_test --rm -ti -v /tmp/:/tmp/ --network="host"  runnerd_image:test /bin/bash  
+        C: Via Docker
+           1. Build image: 
+               docker build --rm . -t runnerd_image:test
+           2. Run container: 
+               docker run --name runnerd_test --rm -ti -v /tmp/:/tmp/ --network="host"  runnerd_image:test /bin/bash  
            3. Start RemoteRunner: RemoteRunnerd/build/RemoteRunnerd
-           4. Change remote-runnerd.conf: cp remote-runnerd.conf runnerd_test:/etc/remote-runnerd.conf
+           4. Change remote-runnerd.conf: 
+               cp remote-runnerd.conf runnerd_test:/etc/remote-runnerd.conf
