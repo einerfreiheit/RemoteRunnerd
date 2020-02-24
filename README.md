@@ -12,7 +12,7 @@ Simple remote task runner. Recieve commands and run task if permitted.
 
        -t: task timeout, sec; default: 0.
     
-       -a: protocol/end-point; default: tpc://127.0.0.1:12345. Available protocols: tcp, ipc.
+       -a: protocol/end-point; default: tcp://127.0.0.1:12345. Available protocols: tcp, ipc.
         
   -  Usage example:
   
