@@ -27,11 +27,11 @@ cppzmq_install() {
 
 runnerd_build() {
         cd $WORKDIR
-        mkdir build && cd build
+        mkdir build
+        cd build
         cmake ..
         make -j$PU
 }
-
 
 libzmq_install
 cppzmq_install
