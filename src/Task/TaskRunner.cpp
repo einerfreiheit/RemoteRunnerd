@@ -1,0 +1,63 @@
+#include "TaskRunner.hpp"
+#include <iostream>
+
+namespace remote_runnerd {
+
+TaskRunner::TaskRunner() : stop_flag_(false) {
+    unsigned int threads_num = std::thread::hardware_concurrency();
+    threads_.reserve(threads_num);
+    for (unsigned int i = 0; i < threads_num; ++i) {
+        addThread();
+    }
+}
+
+void TaskRunner::work() {
+    while (true) {
+        std::function<void()> task;
+        {
+            std::unique_lock<std::mutex> lock(this->tasks_mtx_);
+            this->cv_.wait(lock, [this] { return this->stop_flag_ || !this->tasks_.empty(); });
+            if (this->stop_flag_) {
+                return;
+            }
+            task = std::move(this->tasks_.front());
+            this->tasks_.pop();
+        }
+        try {
+            task();
+        } catch (const std::exception& e) {
+            std::cerr << "Failed to execute task: " << e.what();
+        }
+    }
+}
+
+void TaskRunner::addThread() {
+    threads_.emplace_back([this] { this->work(); });
+}
+
+TaskRunner::~TaskRunner() {
+    {
+        std::unique_lock<std::mutex> lock(tasks_mtx_);
+        stop_flag_ = true;
+    }
+    cv_.notify_all();
+    for (auto& thread : threads_) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+}
+
+template <class F, class... Args>
+void TaskRunner::add(F&& f, Args&&... args) {
+    {
+        std::unique_lock<std::mutex> lock(this->tasks_mtx_);
+        if (stop_flag_) {
+            return;
+        }
+        tasks_.emplace(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+    cv_.notify_one();
+}
+
+} // namespace remote_runnerd

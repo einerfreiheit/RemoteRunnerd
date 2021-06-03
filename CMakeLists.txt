@@ -1,14 +1,32 @@
 cmake_minimum_required (VERSION 3.2)
+
 project (RemoteRunnerd)
-find_package(cppzmq)
+
+find_package( Threads )
+
 set(SOURCE
-    "src/Messaging/ZMQServer.cpp"
-    "src/InstructionProcessor.cpp"
-    "src/RemoteRunnerd.cpp"
-    "src/TaskRunner.cpp"
+    "src/Communication/Server.cpp"
+    "src/Communication/Session.cpp"
+
+    "src/Endpoint/EndpointFactory.cpp"
+    "src/Endpoint/TCPEndpoint.cpp"
+    "src/Endpoint/UDSEndpoint.cpp"
+    
+    "src/Task/RemoteTask.cpp"
+    "src/Task/TaskRunner.cpp"
+    
+    "src/Configuration.cpp"
+    "src/Permissions.cpp"
 )
-include_directories("src/" "src/Messaging/")
+
+include_directories(
+    "src" 
+    "src/Communication" 
+    "src/Endpoint" 
+    "src/Task"
+)
+
 set (CMAKE_C_FLAGS "-O3 -g3")
-add_executable(RemoteRunnerd ${SOURCE}) 
-target_link_libraries(RemoteRunnerd cppzmq)
+add_executable(RemoteRunnerd "src/RemoteRunnerd.cpp" ${SOURCE}) 
+target_link_libraries(RemoteRunnerd ${CMAKE_THREAD_LIBS_INIT} )
 target_compile_features(RemoteRunnerd PRIVATE cxx_std_17)
