@@ -1,11 +1,13 @@
 #include "Configuration.hpp"
-#include "Endpoint/EndpointFactory.hpp"
-#include "Endpoint/IEndpoint.hpp"
 #include "Permissions.hpp"
 #include "Server.hpp"
 #include "Session.hpp"
+
+#include "Endpoint/EndpointFactory.hpp"
+#include "Endpoint/IEndpoint.hpp"
 #include "Task/RemoteTask.hpp"
 #include "Task/TaskRunner.hpp"
+#include "Utils/Utils.hpp"
 
 #include <csignal>
 #include <cstring>
@@ -19,10 +21,9 @@ namespace {
 struct SignalContext {
     std::condition_variable cv;
     std::mutex mtx;
-    bool state {false};
+    bool state{false};
 } ctx;
 
-    
 constexpr int MAX_CONNECTIONS = 100;
 
 } // namespace
@@ -36,8 +37,7 @@ void signalHander(int) {
 Server::Server(const Configuration& configuration) : timeout_(configuration.getTimeout()) {
     permissions_ = std::make_unique<Permissions>(configuration.getInstructions());
     runner_ = std::make_unique<TaskRunner>();
-    EndpointFactory factory;
-    endpoint_ = factory.make(configuration.getProptocol(), configuration.getAddress());
+    endpoint_ = EndpointFactory().make(configuration.getProptocol(), configuration.getAddress());
     signal(SIGHUP, signalHander);
 }
 
@@ -48,6 +48,7 @@ void Server::start() {
         socklen_t peer_addr_size;
         auto peer_endpoint = endpoint_->create();
         int acc = ::accept(socket_, peer_endpoint->get(), &peer_addr_size);
+        checkError(acc, "Failed to accept connection: ");
         std::string info = peer_endpoint->describe();
         std::cout << "New client: " << info << std::endl;
         try {
@@ -61,16 +62,10 @@ void Server::start() {
 void Server::init() {
     std::cout << "Starting on " << endpoint_->describe() << std::endl;
     socket_ = socket(endpoint_->get()->sa_family, SOCK_STREAM, 0);
-    if (socket_ < 0) {
-        throw std::runtime_error((std::string("Failed to create socket ") + std::strerror(errno)));
-    }
-    if (bind(socket_, endpoint_->get(), endpoint_->size()) < 0) {
-        throw std::runtime_error(std::string("Failed to bind socket ") + std::strerror(errno));
-    }
-    if (listen(socket_, MAX_CONNECTIONS) < 0) {
-        throw std::runtime_error(std::string("Failed to start to listen ") + std::strerror(errno));
-    }
-    
+    checkError(socket_, "Failed to create socket: ");
+    checkError(bind(socket_, endpoint_->get(), endpoint_->size()), "Failed to bind socket: ");
+    checkError(listen(socket_, MAX_CONNECTIONS), "Failed to start to listen: ");
+
     signal_thread_ = std::thread([this]() {
         while (!stop_flag_) {
             std::unique_lock<std::mutex> lock(ctx.mtx);
@@ -84,10 +79,6 @@ void Server::init() {
 }
 
 void Server::handle(int fd) {
-    if (fd < 0) {
-        throw std::runtime_error(std::string("Failed to accept connection: ") +
-                                 std::strerror(errno));
-    }
     std::function<void()> func = [this, fd]() {
         Session session(fd);
         std::vector<char> message = session.read();
@@ -99,7 +90,7 @@ void Server::handle(int fd) {
         RemoteTask task;
         task.execute(commands, timeout_, session);
     };
-    runner_->add(func);
+    runner_->add(std::move(func));
 }
 
 Server::~Server() {

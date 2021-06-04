@@ -1,5 +1,7 @@
-#include "Communication/Session.hpp"
 #include "RemoteTask.hpp"
+
+#include "Communication/Session.hpp"
+#include "Utils/Utils.hpp"
 
 #include <cstring>
 #include <unistd.h>
@@ -9,14 +11,9 @@ namespace remote_runnerd {
 void RemoteTask::execute(const std::vector<std::vector<char>>& commands,
                          size_t timeout,
                          const Session& session) {
-    if (pipe(pipefd_) < 0) {
-        throw std::runtime_error(strerror(errno));
-    }
+    checkError(pipe(pipefd_), "Pipe failed: ");
     pid_t pid = fork();
-    if (pid < 0) {
-        throw std::runtime_error(strerror(errno));
-    }
-
+    checkError(pid, "Fork failed: ");
     if (pid == 0) {
         close(pipefd_[0]);
         alarm(timeout);

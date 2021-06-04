@@ -30,7 +30,7 @@ const socklen_t TCPEndpoint::size() const {
 
 const std::string TCPEndpoint::describe() const {
     std::ostringstream os;
-    os << "TCP "<<inet_ntoa(sa_.sin_addr) << ":" << htons(sa_.sin_port);
+    os << "TCP " << inet_ntoa(sa_.sin_addr) << ":" << htons(sa_.sin_port);
     return os.str();
 }
 

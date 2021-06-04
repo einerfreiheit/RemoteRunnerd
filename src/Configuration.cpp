@@ -4,9 +4,8 @@
 #include <unistd.h>
 
 namespace remote_runnerd {
-    
 namespace {
-    
+
 const std::string INSTRUCTIONS = "/etc/remote-runnerd.conf";
 
 }
@@ -15,7 +14,7 @@ Configuration::Configuration(int argc, char** argv) {
     int token;
     while ((token = getopt(argc, argv, "a:p:t:")) != -1) {
         switch (token) {
-        case 'a':{
+        case 'a': {
             addr_ = optarg;
             break;
         }

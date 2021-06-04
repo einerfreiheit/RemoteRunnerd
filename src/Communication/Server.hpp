@@ -2,9 +2,9 @@
 #include "Endpoint/Protocol.hpp"
 
 #include <atomic>
-#include <thread>
 #include <memory>
 #include <string>
+#include <thread>
 
 namespace remote_runnerd {
 
@@ -16,6 +16,8 @@ class IEndpoint;
 class Server {
 public:
     Server(const Configuration& configuration);
+    Server(const Server&) = delete;
+    Server& operator=(const Server&) = delete;
     void start();
     ~Server();
 

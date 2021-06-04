@@ -1,5 +1,6 @@
 #pragma once
 #include "IEndpoint.hpp"
+
 #include <sys/un.h>
 
 namespace remote_runnerd {

@@ -1,5 +1,6 @@
-#include "Communication/Server.hpp"
 #include "Configuration.hpp"
+
+#include "Communication/Server.hpp"
 
 int main(int argc, char** argv) {
     using namespace remote_runnerd;

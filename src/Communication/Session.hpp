@@ -18,11 +18,7 @@ public:
     void transmit(int input) const;
 
 private:
-    void checkError(int return_code) const;
-
-private:
     const int fd_;
-    
 };
 
 } // namespace remote_runnerd

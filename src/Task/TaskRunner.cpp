@@ -2,6 +2,7 @@
 #include <iostream>
 
 namespace remote_runnerd {
+    
 TaskRunner::TaskRunner() : stop_flag_(false) {
     unsigned int threads_num = std::thread::hardware_concurrency();
     threads_.reserve(threads_num);
@@ -31,7 +32,7 @@ void TaskRunner::work() {
 }
 
 template <>
-void TaskRunner::add<std::function, void>(std::function<void()> func) {
+void TaskRunner::add<std::function, void>(std::function<void()>&& func) {
     {
         std::unique_lock<std::mutex> lock(this->tasks_mtx_);
         if (stop_flag_) {

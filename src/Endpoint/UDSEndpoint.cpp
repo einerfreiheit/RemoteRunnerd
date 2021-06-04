@@ -1,9 +1,5 @@
 #include "UDSEndpoint.hpp"
 
-#include <sstream>
-#include <sys/socket.h>
-#include <sys/un.h>
-
 namespace remote_runnerd {
 
 UDSEndpoint::UDSEndpoint(const std::string& path) {
@@ -18,7 +14,7 @@ const socklen_t UDSEndpoint::size() const {
     return sizeof(sa_);
 }
 const std::string UDSEndpoint::describe() const {
-    return std::string("UDS connection ") + sa_.sun_path;
+    return std::string("UDS connection: ") + sa_.sun_path;
 }
 std::unique_ptr<IEndpoint> UDSEndpoint::create() const {
     return std::make_unique<UDSEndpoint>();

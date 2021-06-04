@@ -24,6 +24,7 @@ include_directories(
     "src/Communication" 
     "src/Endpoint" 
     "src/Task"
+    "src/Utils"
 )
 
 set (CMAKE_C_FLAGS "-O3 -g3")
