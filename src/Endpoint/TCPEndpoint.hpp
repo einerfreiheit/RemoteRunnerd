@@ -1,6 +1,8 @@
 #pragma once
 #include "IEndpoint.hpp"
 
+#include <netinet/in.h>
+
 namespace remote_runnerd {
 
 class TCPEndpoint : public IEndpoint {
@@ -9,8 +11,8 @@ public:
     TCPEndpoint(const std::string& port);
 
     sockaddr* get() const override;
-    const size_t size() const override;
-    std::string describe() const override;
+    const socklen_t size() const override;
+    const std::string describe() const override;
     std::unique_ptr<IEndpoint> create() const override;
 
 private:

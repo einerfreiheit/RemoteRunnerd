@@ -2,7 +2,6 @@
 #include <iostream>
 
 namespace remote_runnerd {
-
 TaskRunner::TaskRunner() : stop_flag_(false) {
     unsigned int threads_num = std::thread::hardware_concurrency();
     threads_.reserve(threads_num);
@@ -31,6 +30,18 @@ void TaskRunner::work() {
     }
 }
 
+template <>
+void TaskRunner::add<std::function, void>(std::function<void()> func) {
+    {
+        std::unique_lock<std::mutex> lock(this->tasks_mtx_);
+        if (stop_flag_) {
+            return;
+        }
+        tasks_.emplace(func);
+    }
+    cv_.notify_one();
+}
+
 void TaskRunner::addThread() {
     threads_.emplace_back([this] { this->work(); });
 }
@@ -46,18 +57,6 @@ TaskRunner::~TaskRunner() {
             thread.join();
         }
     }
-}
-
-template <class F, class... Args>
-void TaskRunner::add(F&& f, Args&&... args) {
-    {
-        std::unique_lock<std::mutex> lock(this->tasks_mtx_);
-        if (stop_flag_) {
-            return;
-        }
-        tasks_.emplace(std::forward<F>(f), std::forward<Args>(args)...);
-    }
-    cv_.notify_one();
 }
 
 } // namespace remote_runnerd

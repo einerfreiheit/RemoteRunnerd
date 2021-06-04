@@ -1,5 +1,6 @@
 #include "TCPEndpoint.hpp"
 
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <sstream>
@@ -23,12 +24,14 @@ sockaddr* TCPEndpoint::get() const {
     return (sockaddr*)&sa_;
 }
 
-const size_t TCPEndpoint::size() const {
+const socklen_t TCPEndpoint::size() const {
     return sizeof(sa_);
 }
 
-std::string TCPEndpoint::describe() const {
-    return std::string("TCP connection ") + inet_ntoa(sa_.sin_addr);
+const std::string TCPEndpoint::describe() const {
+    std::ostringstream os;
+    os << "TCP "<<inet_ntoa(sa_.sin_addr) << ":" << htons(sa_.sin_port);
+    return os.str();
 }
 
 std::unique_ptr<IEndpoint> TCPEndpoint::create() const {

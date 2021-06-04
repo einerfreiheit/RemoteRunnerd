@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iterator>
 #include <sstream>
+#include <iostream>
 
 namespace remote_runnerd {
     
@@ -30,6 +31,7 @@ std::vector<std::vector<char>> Permissions::split(const std::vector<char>& cmd) 
 }
 
 void Permissions::update() {
+     std::cout<<"Reading permissions"<<std::endl;
     std::ifstream input(path_);
     std::string token;
     if (!input.is_open()) {

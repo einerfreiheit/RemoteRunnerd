@@ -13,11 +13,12 @@ const std::string INSTRUCTIONS = "/etc/remote-runnerd.conf";
 
 Configuration::Configuration(int argc, char** argv) {
     int token;
-    while ((token = getopt(argc, argv, "a:t:")) != -1) {
+    while ((token = getopt(argc, argv, "a:p:t:")) != -1) {
         switch (token) {
-        case 'a':
-            addr_ = std::string(optarg);
+        case 'a':{
+            addr_ = optarg;
             break;
+        }
         case 't': {
             std::istringstream is(optarg);
             is >> timeout_;
@@ -32,6 +33,7 @@ Configuration::Configuration(int argc, char** argv) {
             } else {
                 throw std::runtime_error("Unknown protocol: " + protocol);
             }
+            break;
         }
         default:
             throw std::runtime_error(

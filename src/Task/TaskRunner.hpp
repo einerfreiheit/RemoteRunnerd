@@ -15,8 +15,8 @@ public:
     TaskRunner& operator=(const TaskRunner& other) const = delete;
     TaskRunner(const TaskRunner& other) = delete;
     ~TaskRunner();
-    template <class F, class... Args>
-    void add(F&& f, Args&&... args);
+    template <template <class> class F, class R>
+    void add(F<R()> func);
 
 private:
     void addThread();

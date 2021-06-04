@@ -1,5 +1,6 @@
 #pragma once
 #include "IEndpoint.hpp"
+#include <sys/un.h>
 
 namespace remote_runnerd {
 
@@ -9,8 +10,8 @@ public:
     UDSEndpoint(const std::string& path);
 
     sockaddr* get() const override;
-    const size_t size() const override;
-    std::string describe() const override;
+    const socklen_t size() const override;
+    const std::string describe() const override;
     std::unique_ptr<IEndpoint> create() const override;
 
 private:

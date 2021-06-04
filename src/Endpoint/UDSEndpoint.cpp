@@ -14,10 +14,10 @@ UDSEndpoint::UDSEndpoint(const std::string& path) {
 sockaddr* UDSEndpoint::get() const {
     return (sockaddr*)&sa_;
 }
-const size_t UDSEndpoint::size() const {
+const socklen_t UDSEndpoint::size() const {
     return sizeof(sa_);
 }
-std::string UDSEndpoint::describe() const {
+const std::string UDSEndpoint::describe() const {
     return std::string("UDS connection ") + sa_.sun_path;
 }
 std::unique_ptr<IEndpoint> UDSEndpoint::create() const {

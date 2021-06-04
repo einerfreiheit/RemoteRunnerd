@@ -11,17 +11,26 @@
 #include <cstring>
 #include <iostream>
 #include <sys/socket.h>
+#include <unistd.h>
 
 namespace remote_runnerd {
 namespace {
+
+struct SignalContext {
+    std::condition_variable cv;
+    std::mutex mtx;
+    bool state {false};
+} ctx;
+
     
 constexpr int MAX_CONNECTIONS = 100;
-volatile std::sig_atomic_t signal_state;
 
 } // namespace
 
-void signalHander(int signal) {
-    signal_state = signal;
+void signalHander(int) {
+    std::unique_lock<std::mutex>(ctx.mtx);
+    ctx.state = true;
+    ctx.cv.notify_one();
 }
 
 Server::Server(const Configuration& configuration) : timeout_(configuration.getTimeout()) {
@@ -33,23 +42,24 @@ Server::Server(const Configuration& configuration) : timeout_(configuration.getT
 }
 
 void Server::start() {
+    permissions_->update();
     init();
     while (true) {
         socklen_t peer_addr_size;
         auto peer_endpoint = endpoint_->create();
-        int acc = accept(socket_, peer_endpoint->get(), &peer_addr_size);
+        int acc = ::accept(socket_, peer_endpoint->get(), &peer_addr_size);
         std::string info = peer_endpoint->describe();
-        std::cout << "Got new client: " << info << std::endl;
+        std::cout << "New client: " << info << std::endl;
         try {
             handle(acc);
         } catch (const std::runtime_error& e) {
             std::cerr << "Failed to execute commands for " << info << std::endl;
         }
-        std::cout << "Request from " << info << " completed" << std::endl;
     }
 }
 
 void Server::init() {
+    std::cout << "Starting on " << endpoint_->describe() << std::endl;
     socket_ = socket(endpoint_->get()->sa_family, SOCK_STREAM, 0);
     if (socket_ < 0) {
         throw std::runtime_error((std::string("Failed to create socket ") + std::strerror(errno)));
@@ -60,33 +70,43 @@ void Server::init() {
     if (listen(socket_, MAX_CONNECTIONS) < 0) {
         throw std::runtime_error(std::string("Failed to start to listen ") + std::strerror(errno));
     }
+    
+    signal_thread_ = std::thread([this]() {
+        while (!stop_flag_) {
+            std::unique_lock<std::mutex> lock(ctx.mtx);
+            ctx.cv.wait(lock, [this] { return this->stop_flag_ || ctx.state; });
+            if (ctx.state) {
+                permissions_->update();
+                ctx.state = false;
+            }
+        }
+    });
 }
 
 void Server::handle(int fd) {
     if (fd < 0) {
-        if (errno == EINTR && signal_state) {
-            permissions_->update();
-            signal_state = 0;
-            return;
-        } else {
-            throw std::runtime_error(std::string("Failed to accept connection: ") +
-                                     std::strerror(errno));
-        }
+        throw std::runtime_error(std::string("Failed to accept connection: ") +
+                                 std::strerror(errno));
     }
-    auto handle = [this, fd]() {
+    std::function<void()> func = [this, fd]() {
         Session session(fd);
         std::vector<char> message = session.read();
         auto commands = permissions_->split(message);
         if (!permissions_->isAllowed(commands)) {
-            session.write("Failed to execute task: operation is not permitted");
+            session.write("Failed to execute task: operation is not permitted\n");
             return;
         }
         RemoteTask task;
         task.execute(commands, timeout_, session);
     };
-    runner_->add(handle);
+    runner_->add(func);
 }
 
-Server::~Server() = default;
-
+Server::~Server() {
+    stop_flag_ = true;
+    ctx.cv.notify_all();
+    if (signal_thread_.joinable()) {
+        signal_thread_.join();
+    }
+}
 } // namespace remote_runnerd

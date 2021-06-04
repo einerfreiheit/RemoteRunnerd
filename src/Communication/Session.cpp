@@ -4,8 +4,15 @@
 #include <stdexcept>
 #include <unistd.h>
 
+#include <iostream>
+
 namespace remote_runnerd {
+namespace {
+
+constexpr char END = '\n';
     
+}
+
 Session::Session(int fd) : fd_(fd) {}
 
 Session::~Session() {
@@ -19,6 +26,9 @@ std::vector<char> Session::read() const {
     char buffer;
     int return_code = 0;
     while ((return_code = ::read(fd_, &buffer, 1)) > 0) {
+        if (buffer == END) {
+            break;
+        }
         result.push_back(buffer);
     }
     checkError(return_code);
