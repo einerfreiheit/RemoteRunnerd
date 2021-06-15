@@ -16,12 +16,12 @@ void TaskRunner::work() {
         std::function<void()> task;
         {
             std::unique_lock<std::mutex> lock(this->tasks_mtx_);
-            this->cv_.wait(lock, [this] { return this->stop_flag_ || !this->tasks_.empty(); });
-            if (this->stop_flag_) {
+            cv_.wait(lock, [this] { return stop_flag_ || !tasks_.empty(); });
+            if (stop_flag_) {
                 return;
             }
-            task = std::move(this->tasks_.front());
-            this->tasks_.pop();
+            task = std::move(tasks_.front());
+            tasks_.pop();
         }
         try {
             task();
@@ -34,7 +34,7 @@ void TaskRunner::work() {
 template <>
 void TaskRunner::add<std::function, void>(std::function<void()>&& func) {
     {
-        std::unique_lock<std::mutex> lock(this->tasks_mtx_);
+        std::lock_guard<std::mutex> lock(this->tasks_mtx_);
         if (stop_flag_) {
             return;
         }
@@ -49,7 +49,7 @@ void TaskRunner::addThread() {
 
 TaskRunner::~TaskRunner() {
     {
-        std::unique_lock<std::mutex> lock(tasks_mtx_);
+        std::lock_guard<std::mutex> lock(tasks_mtx_);
         stop_flag_ = true;
     }
     cv_.notify_all();

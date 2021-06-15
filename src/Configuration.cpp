@@ -6,7 +6,7 @@
 namespace remote_runnerd {
 namespace {
 
-const std::string INSTRUCTIONS = "/etc/remote-runnerd.conf";
+const std::string INSTRUCTION_PATH = "/etc/remote-runnerd.conf";
 
 }
 
@@ -55,7 +55,7 @@ const Protocol Configuration::getProptocol() const {
 }
 
 const std::string Configuration::getInstructions() const {
-    return INSTRUCTIONS;
+    return INSTRUCTION_PATH;
 }
 
 } // namespace remote_runnerd

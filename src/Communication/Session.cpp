@@ -31,20 +31,21 @@ std::vector<char> Session::read() const {
         }
         result.push_back(buffer);
     }
-    checkError(return_code, "Read has failed: ");
+    checkError(return_code, "Read has failed");
     return result;
 }
 
 void Session::write(std::string_view message) const {
-    checkError(::write(fd_, message.data(), message.size()), "Write has failed: ");
+    checkError(::write(fd_, message.data(), message.size()), "Write has failed");
 }
 
 void Session::transmit(int input) const {
     char buffer;
     int return_code = 0;
     while ((return_code = ::read(input, &buffer, 1)) > 0) {
-        checkError(::write(fd_, &buffer, 1), "Transmit failed [write]: ");
+        checkError(::write(fd_, &buffer, 1), "Transmission has failed [write]");
     }
+     checkError(return_code, "Transmission has failed [read]");
 }
 
 } // namespace remote_runnerd

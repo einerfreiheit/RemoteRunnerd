@@ -7,6 +7,7 @@
 #include "Endpoint/IEndpoint.hpp"
 #include "Task/RemoteTask.hpp"
 #include "Task/TaskRunner.hpp"
+#include "Utils/TextProcessing.hpp"
 #include "Utils/Utils.hpp"
 
 #include <csignal>
@@ -54,7 +55,8 @@ void Server::start() {
         try {
             handle(acc);
         } catch (const std::runtime_error& e) {
-            std::cerr << "Failed to execute commands for " << info << std::endl;
+            std::cerr << "Failed to execute commands for " << info << ", reason: " << e.what()
+                      << std::endl;
         }
     }
 }
@@ -62,14 +64,17 @@ void Server::start() {
 void Server::init() {
     std::cout << "Starting on " << endpoint_->describe() << std::endl;
     socket_ = socket(endpoint_->get()->sa_family, SOCK_STREAM, 0);
-    checkError(socket_, "Failed to create socket: ");
-    checkError(bind(socket_, endpoint_->get(), endpoint_->size()), "Failed to bind socket: ");
-    checkError(listen(socket_, MAX_CONNECTIONS), "Failed to start to listen: ");
+    checkError(socket_, "Failed to create socket");
+    checkError(bind(socket_, endpoint_->get(), endpoint_->size()), "Failed to bind socket");
+    checkError(listen(socket_, MAX_CONNECTIONS), "Failed to start to listen");
 
     signal_thread_ = std::thread([this]() {
-        while (!stop_flag_) {
+        while (true) {
             std::unique_lock<std::mutex> lock(ctx.mtx);
-            ctx.cv.wait(lock, [this] { return this->stop_flag_ || ctx.state; });
+            ctx.cv.wait(lock, [this] { return stop_flag_ || ctx.state; });
+            if (stop_flag_) {
+                break;
+            }
             if (ctx.state) {
                 permissions_->update();
                 ctx.state = false;
@@ -81,23 +86,26 @@ void Server::init() {
 void Server::handle(int fd) {
     std::function<void()> func = [this, fd]() {
         Session session(fd);
-        std::vector<char> message = session.read();
-        auto commands = permissions_->split(message);
-        if (!permissions_->isAllowed(commands)) {
+        auto message = session.read();
+        if (!permissions_->isAllowed(message)) {
             session.write("Failed to execute task: operation is not permitted\n");
             return;
         }
         RemoteTask task;
-        task.execute(commands, timeout_, session);
+        task.execute(message, timeout_, session);
     };
     runner_->add(std::move(func));
 }
 
 Server::~Server() {
-    stop_flag_ = true;
-    ctx.cv.notify_all();
+    {
+        std::lock_guard<std::mutex> lock(ctx.mtx);
+        stop_flag_ = true;
+        ctx.cv.notify_one();
+    }
     if (signal_thread_.joinable()) {
         signal_thread_.join();
     }
 }
+
 } // namespace remote_runnerd

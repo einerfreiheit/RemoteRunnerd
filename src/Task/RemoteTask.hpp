@@ -14,7 +14,7 @@ public:
     RemoteTask& operator=(const RemoteTask& other) const = delete;
     RemoteTask(const RemoteTask& other) = delete;
     void
-    execute(const std::vector<std::vector<char>>& commands, size_t timeout, const Session& session);
+    execute(const std::vector<char>& commands, size_t timeout, const Session& session);
 
 private:
     int pipefd_[2];

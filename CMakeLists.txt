@@ -15,6 +15,8 @@ set(SOURCE
     "src/Task/RemoteTask.cpp"
     "src/Task/TaskRunner.cpp"
     
+    "src/Utils/TextProcessing.cpp"
+    
     "src/Configuration.cpp"
     "src/Permissions.cpp"
 )

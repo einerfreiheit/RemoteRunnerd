@@ -31,7 +31,7 @@ private:
     std::unique_ptr<IEndpoint> endpoint_;
     size_t timeout_;
     int socket_;
-    std::atomic_bool stop_flag_{false};
+    bool stop_flag_{false};
     std::thread signal_thread_;
 };
 
