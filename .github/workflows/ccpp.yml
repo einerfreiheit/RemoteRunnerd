@@ -6,18 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Checkout submodules
-      shell: bash
+    - name: cmake build
       run: |
-         auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-         git submodule sync --recursive
-         git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
-    - name: build
-      shell: bash
-      run: |
-        mkdir build && cd build
-        cmake ..
+        mkdir -p build
+        cd build
+        ls .. -l
+        cmake -DCMAKE_BUILD_TYPE=Release .
         make -j`nproc`
     - uses: actions/upload-artifact@master
       with:
