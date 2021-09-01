@@ -18,7 +18,7 @@ Simple remote task runner. Runner executes requests from clients (can be either 
         
   - Usage example:
   
-         ./RemoteRunnerd -t 10 -a TCP -p 12345
+         ./RemoteRunnerd -t 10 -p TCP -a 12345
  
  - Build:
  
